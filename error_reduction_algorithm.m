@@ -2,9 +2,9 @@ clearvars
 close all
 clc
 
-max_iter = 10000;
-f = load("complex3.mat","image").image;
-N = size(f,1);
+max_iter = 1000;
+load("function3.mat"); f = image;
+N = size(f,1); M = 2 * N;
 x = linspace(-1,1,N); y = x;
 
 figure()
@@ -22,22 +22,20 @@ axis off
 
 sgtitle("\textbf{Original image}","Interpreter","latex")
 
-F = fft2(f);
-z = abs(f) .* exp(1i * 2*pi * rand(N));
+F = fft2(f,M,M);
+z = rand(N) .* exp(1i * 2*pi * rand(N));
 counter = 0;
-error_real = zeros(1,max_iter);
-error_imag = zeros(1,max_iter);
 error = zeros(1,max_iter);
 
 while counter < max_iter
 
-    Z = fft2(z);
+    Z = fft2(z,M,M);
     Z = abs(F) .* exp(1i * angle(Z));
-    z = ifft2(Z);
-    z = abs(f) .* exp(1i * angle(z));
-    
+    z = ifft2(Z,"symmetric"); z = z(1:N,1:N);      % add "symmetric" as an input for ifft2 when working with real signals
+    z = prior(z);
+
     counter = counter + 1;
-    error(counter) = norm(abs(F) - abs(fft2(z)),'fro') / norm(F,'fro');
+    error(counter) = norm(abs(F) - abs(fft2(z,M,M)),'fro') / norm(F,'fro');
 
 end
 
@@ -62,4 +60,3 @@ set(gca,'dataAspectRatio',[1 1 1])
 axis off
 
 sgtitle("\textbf{Reconstructed image}","Interpreter","latex")
-
